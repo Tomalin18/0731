@@ -32,6 +32,7 @@ export default function Home() {
         subtitle="お客様に愛される"
         type="popular"
         viewAllLink="/products"
+        displayMode="carousel"
       />
 
       {/* Brand Story Section */}
@@ -44,6 +45,7 @@ export default function Home() {
         type="new"
         viewAllLink="/new-arrivals"
         className="bg-gray-50"
+        displayMode="carousel"
       />
 
       {/* Limited Products Section */}

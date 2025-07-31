@@ -5,6 +5,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ProductCard } from '@/components/product-card'
 import { ChevronRight, Loader2 } from 'lucide-react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
+import AutoScroll from 'embla-carousel-auto-scroll'
 
 interface Product {
   id: number
@@ -25,6 +33,7 @@ interface ProductSectionProps {
   viewAllLink?: string
   limit?: number
   className?: string
+  displayMode?: 'grid' | 'carousel'
 }
 
 export function ProductSection({ 
@@ -33,7 +42,8 @@ export function ProductSection({
   type, 
   viewAllLink = '/products',
   limit = 4,
-  className = '' 
+  className = '',
+  displayMode = 'grid'
 }: ProductSectionProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -67,8 +77,9 @@ export function ProductSection({
           processedProducts = processedProducts.filter((p: Product) => p.is_limited)
         }
 
-        // Limit results
-        setProducts(processedProducts.slice(0, limit))
+        // Limit results - show more items for carousel mode
+        const itemLimit = displayMode === 'carousel' ? Math.max(limit, 8) : limit
+        setProducts(processedProducts.slice(0, itemLimit))
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
       } finally {
@@ -77,7 +88,7 @@ export function ProductSection({
     }
 
     fetchProducts()
-  }, [type, limit])
+  }, [type, limit, displayMode])
 
   if (loading) {
     return (
@@ -125,18 +136,55 @@ export function ProductSection({
           </div>
         </div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
-              className="fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
+        {/* Products Display */}
+        {displayMode === 'carousel' ? (
+          <div className="mb-12">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              plugins={[
+                AutoScroll({
+                  speed: 1,
+                  stopOnInteraction: false,
+                  stopOnMouseEnter: true,
+                })
+              ]}
+              className="w-full max-w-7xl mx-auto"
             >
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {products.map((product, index) => (
+                  <CarouselItem
+                    key={product.id}
+                    className="pl-2 md:pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5"
+                  >
+                    <div
+                      className="fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <ProductCard product={product} className="h-full" size="compact" />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex -left-12 bg-white/80 hover:bg-white border-gray-200 hover:border-yellow-600 text-gray-600 hover:text-yellow-600" />
+              <CarouselNext className="hidden sm:flex -right-12 bg-white/80 hover:bg-white border-gray-200 hover:border-yellow-600 text-gray-600 hover:text-yellow-600" />
+            </Carousel>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            {products.map((product, index) => (
+              <div
+                key={product.id}
+                className="fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
         <div className="text-center">

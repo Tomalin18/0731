@@ -28,9 +28,10 @@ interface Product {
 interface ProductCardProps {
   product: Product
   className?: string
+  size?: 'default' | 'compact'
 }
 
-export function ProductCard({ product, className = '' }: ProductCardProps) {
+export function ProductCard({ product, className = '', size = 'default' }: ProductCardProps) {
   const [isLiked, setIsLiked] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
 
@@ -38,9 +39,11 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
     return `¥${(priceInCents / 100).toLocaleString()}`
   }
 
+  const isCompact = size === 'compact'
+  
   return (
     <Card className={`group card-hover bg-white border-0 shadow-md hover:shadow-xl overflow-hidden ${className}`}>
-      <div className="relative aspect-square overflow-hidden">
+      <div className={`relative overflow-hidden ${isCompact ? 'aspect-[4/3]' : 'aspect-square'}`}>
         {/* Product Image */}
         <Link href={`/products/${product.id}`}>
           <div className="relative w-full h-full">
@@ -111,22 +114,22 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
 
-      <CardContent className="p-4">
-        <div className="space-y-2">
+      <CardContent className={isCompact ? "p-3" : "p-4"}>
+        <div className={isCompact ? "space-y-1" : "space-y-2"}>
           {/* Brand/Category */}
           {product.brand && (
-            <p className="text-sm text-gray-500 font-medium">{product.brand}</p>
+            <p className={`text-gray-500 font-medium ${isCompact ? "text-xs" : "text-sm"}`}>{product.brand}</p>
           )}
 
           {/* Product Name */}
           <Link href={`/products/${product.id}`}>
-            <h3 className="font-semibold text-gray-900 line-clamp-2 hover:text-yellow-600 transition-colors duration-200 leading-snug">
+            <h3 className={`font-semibold text-gray-900 line-clamp-2 hover:text-yellow-600 transition-colors duration-200 leading-snug ${isCompact ? "text-sm" : ""}`}>
               {product.name}
             </h3>
           </Link>
 
           {/* Rating */}
-          {product.rating && (
+          {product.rating && !isCompact && (
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => (
                 <Star
@@ -146,17 +149,19 @@ export function ProductCard({ product, className = '' }: ProductCardProps) {
           )}
 
           {/* Price */}
-          <div className="flex items-center justify-between pt-2">
-            <p className="text-lg font-bold text-gray-900">
+          <div className={`flex items-center justify-between ${isCompact ? "pt-1" : "pt-2"}`}>
+            <p className={`font-bold text-gray-900 ${isCompact ? "text-base" : "text-lg"}`}>
               {formatPrice(product.price_in_cents)}
             </p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-white"
-            >
-              詳細
-            </Button>
+            {!isCompact && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 border-yellow-600 text-yellow-600 hover:bg-yellow-600 hover:text-white"
+              >
+                詳細
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>
